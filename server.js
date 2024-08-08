@@ -1,15 +1,23 @@
-require('dotenv').config();
-const express = require('express');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const passport = require('passport');
-const mongoose = require('mongoose');
-const path = require('path');
-const flash = require('express-flash');
+import 'dotenv/config';
+import express from 'express';
+import Serverless from "serverless-http";
+import session from 'express-session';
+import MongoStore from 'connect-mongo';
+import passport from 'passport';
+import mongoose from 'mongoose';
+import path from 'path';
+import flash from 'express-flash';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+
 const app = express();
 
+// Needed to mimic __dirname behavior in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 // Passport configuration for User authentication
-require('./config/passport');
+import './config/passport.js';
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // middleware to handle URL encoded data
@@ -46,14 +54,14 @@ app.get('/ping', (req, res) => {
 });
 
 // Import authentication routes
-const authRoutes = require('./routes/auth');
+import authRoutes from './routes/auth.js';
 app.use(authRoutes);
 
 // Import GitHub routes
-const githubRoutes = require('./routes/github');
+import githubRoutes from './routes/github.js';
 
 // Middleware to require login/auth
-const authRequired = require('./middlewares/authRequired');
+import authRequired from './middlewares/authRequired.js';
 
 // Serve the main page only if the user is authenticated
 app.get('/', authRequired, (req, res, next) => {
@@ -82,9 +90,13 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).send(err.message || 'An unexpected error occurred.');
 });
 
+export const handler = Serverless(app);
+
+/*
 // Start the server and listen on the env port or default to 3000
 const server = app.listen(process.env.PORT || 3000, () => {
   console.log(`Server started on port ${server.address().port}`);
 }).on('error', (err) => {
   console.error(`Failed to start the server on port ${process.env.PORT || 3000}:`, err.stack);
 });
+*/
