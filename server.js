@@ -1,23 +1,16 @@
-import 'dotenv/config';
-import express from 'express';
-import Serverless from "serverless-http";
-import session from 'express-session';
-import MongoStore from 'connect-mongo';
-import passport from 'passport';
-import mongoose from 'mongoose';
-import path from 'path';
-import flash from 'express-flash';
-import { fileURLToPath } from 'url';
-import { dirname } from 'path';
-
+require('dotenv').config();
+const express = require('express');
+const session = require('express-session');
+const MongoStore = require('connect-mongo');
+const passport = require('passport');
+const mongoose = require('mongoose');
+const path = require('path');
+const flash = require('express-flash');
+const serverless = require('serverless-http');
 const app = express();
 
-// Needed to mimic __dirname behavior in ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
 // Passport configuration for User authentication
-import './config/passport.js';
+require('./config/passport');
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // middleware to handle URL encoded data
@@ -54,14 +47,14 @@ app.get('/ping', (req, res) => {
 });
 
 // Import authentication routes
-import authRoutes from './routes/auth.js';
+const authRoutes = require('./routes/auth');
 app.use(authRoutes);
 
 // Import GitHub routes
-import githubRoutes from './routes/github.js';
+const githubRoutes = require('./routes/github');
 
 // Middleware to require login/auth
-import authRequired from './middlewares/authRequired.js';
+const authRequired = require('./middlewares/authRequired');
 
 // Serve the main page only if the user is authenticated
 app.get('/', authRequired, (req, res, next) => {
@@ -90,8 +83,6 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).send(err.message || 'An unexpected error occurred.');
 });
 
-export const handler = Serverless(app);
-
 /*
 // Start the server and listen on the env port or default to 3000
 const server = app.listen(process.env.PORT || 3000, () => {
@@ -100,3 +91,5 @@ const server = app.listen(process.env.PORT || 3000, () => {
   console.error(`Failed to start the server on port ${process.env.PORT || 3000}:`, err.stack);
 });
 */
+
+module.exports.handler = serverless(app);
