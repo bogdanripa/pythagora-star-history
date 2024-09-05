@@ -83,13 +83,11 @@ app.use((err, req, res, next) => {
   res.status(err.statusCode || 500).send(err.message || 'An unexpected error occurred.');
 });
 
-/*
 // Start the server and listen on the env port or default to 3000
 const server = app.listen(process.env.PORT || 3000, () => {
   console.log(`Server started on port ${server.address().port}`);
 }).on('error', (err) => {
   console.error(`Failed to start the server on port ${process.env.PORT || 3000}:`, err.stack);
 });
-*/
 
 module.exports.handler = serverless(app);
